@@ -182,11 +182,11 @@ def get_recipe_details(api_key, recipe_id):
         response = requests.get(endpoint, params=params)
         response.raise_for_status()
         recipe_details = response.json()
-        
+
         # Clean the HTML content from the instructions
         if 'instructions' in recipe_details:
             recipe_details['instructions'] = remove_html_tags(recipe_details['instructions'])
-        
+
         return recipe_details
     except requests.exceptions.RequestException as err:
         return f"Error: {err}"
@@ -266,7 +266,7 @@ if st.session_state["logged_in"]:
                             missing_ingredients = [ingredient for ingredient in ingredients if ingredient not in st.session_state['inventory']]
                             st.session_state['shopping_list'].extend(missing_ingredients)
 
-  
+
 
 
 
@@ -288,15 +288,15 @@ if st.session_state["logged_in"]:
 else:
     # If the user is not logged in, he sees the login page
     show_login_page()
-    
+
 # Styling and other layout improvements
 st.markdown("""
     <style>
     .main {background-color: #ffffff;}
     </style>
     """, unsafe_allow_html=True)
-    
- 
+
+
 # Disclaimer:
 
 # The Streamlit app code provided above was developed independently, and its functionality and structure were not directly influenced by ChatGPT
