@@ -210,7 +210,7 @@ if st.session_state["logged_in"]:
     # Sidebar navigation
     page = st.sidebar.radio('Navigate to', ['Home', 'Inventory', 'Recipes', 'Shopping List'])
 
-    api_key = '8f6828d3c3714e5d847cab14a9b57fb1'
+    api_key = '5bb998eadc274a599d9732e71f03a378'
 
     if page == 'Home':
         st.header('🏠 Welcome to our App!')
