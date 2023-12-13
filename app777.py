@@ -20,121 +20,54 @@ import re
 # Overall, the app serves as a convenient platform for users to manage their kitchen inventory, discover new recipes, and efficiently plan their shopping activities – especially for students
 
 
-# First we need to initialize the session state
-if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
-    st.session_state["uname"] = None
-
 # Here you can define the login page
 def show_login_page():
-    st.title("Login")
+    st.title("Sign In & Sign Up")
     ###############################
     # Register & Login logic start
     ###############################
     # Define the text fields to enter username & password
     uname = st.text_input("Username", key="username_input")
     psword = st.text_input("Password", type="password", key="password_input")
+    colu1, colu2 = st.columns([1, 1])
     ###############################
     # Register logic
     ###############################
     # If the register button is pressed, the following code is executed
-    if st.button("Register"):
-        # We query PSQL to try to register a new user
-        results = register_user(uname, psword)
-        # Depending on the result from PSQL, we raise various errors or proceed with login
-        if results == "fill_out_all":
-            st.error("Enter a username and a password")
-        elif results[0] == "already_exists":
-            st.error("This username already exists. Please enter another one.")
-        elif results[0] == "user_registered":
-            st.session_state["logged_in"] = True
-            st.session_state["uname"] = results[1]
-            st.success("Registered successfully")
-            time.sleep(3)
-            st.rerun()  # st.experimental_rerun()
+    with colu2:
+        if st.button("Register"):
+            # We query PSQL to try to register a new user
+            results = register_user(uname, psword)
+            # Depending on the result from PSQL, we raise various errors or proceed with login
+            if results == "fill_out_all":
+                st.error("Enter a username and a password")
+            elif results[0] == "already_exists":
+                st.error("This username already exists. Please enter another one.")
+            elif results[0] == "user_registered":
+                st.session_state["logged_in"] = True
+                st.session_state["uname"] = results[1]
+                st.rerun()  # st.experimental_rerun()
     ###############################
     # Login logic
     ###############################
     # If the login button is pressed, the following code is executed
-    if st.button("Login"):
-        # We query PSQL to check whether the username and password match
-        results = is_login_successful(uname, psword)
-        # Depending on the result from PSQL, we raise various errors or proceed with login
-        if results == "fill_out_all":
-            st.error("Enter your username and your password")
-        elif results[0] == "username_not_found":
-            st.error("Incorrect username")
-        elif results[0] == "wrong_password":
-            st.error("Incorrect password")
-        elif results[0] == "correct_password":
-            st.session_state["logged_in"] = True
-            st.session_state["uname"] = results[1]
-            st.success("Registered successfully")
-            st.rerun()  # st.experimental_rerun()
-    ###############################
-    # Register & Login logic end
-    ###############################
-# Here you can define your main page
-def show_main_app():
-    st.title("Main Application")
-    ###############################
-    # Logout logic start
-    ###############################
-    # If the logout button is pressed, the following code is executed
-    if st.button("Logout"):
-        st.session_state['logged_in'] = False
-        st.session_state["uname"] = None
-        st.experimental_rerun()  # Use st.experimental_rerun() instead of st.rerun()
-    ###############################
-    # Logout logic end
-    ###############################
-    ###############################
-    # Stored List logic start
-    ###############################
-    # Leverage the user variable from login
-    user = st.session_state["uname"]
-    # Make a personalized title
-    st.title(f"{user}'s inventory")
-    ###############################
-    # Add items start
-    ###############################
-    # Check if the 'add_button_clicked' key exists in the session_state, if not, initialize it
-    if "new_item" not in st.session_state:
-        st.session_state["new_item"] = ""
-    itemname = st.text_input("Item")
-    # Only set the flag when the button is clicked
-    if st.button("Add", key=st.session_state["new_item"]) and itemname != "":
-        # Add the selected item for the user
-        query_add(user, itemname)
-        st.session_state["new_item"] = random.random()  # prevents a stupid streamlit bug (/feature)
-        st.rerun()  # st.experimental_rerun()
-    ###############################
-    # Add items end
-    ###############################
-    ###############################
-    # Display the whole list start
-    ###############################
-    # We query PSQL for all items stored for this user
-    result = query_all_table(user)
-    # We loop over all results and display them in a table
-    items = []
-    for item_index, item in enumerate(result[0]):
-        items.append([item[2], result[1][item_index + 1]])
-    # Create a table with buttons
-    for item, item_index in items:
-        col1, col2 = st.columns([3, 2])
-        with col1:
-            st.text(item)
-        with col2:
-            if st.button("Delete", key=item_index):
-                # Delete the selected item from the user
-                query_delete(item_index)
+    with colu1:
+        if st.button("Login"):
+            # We query PSQL to check whether the username and password match
+            results = is_login_successful(uname, psword)
+            # Depending on the result from PSQL, we raise various errors or proceed with login
+            if results == "fill_out_all":
+                st.error("Enter your username and your password")
+            elif results[0] == "username_not_found":
+                st.error("Incorrect username")
+            elif results[0] == "wrong_password":
+                st.error("Incorrect password")
+            elif results[0] == "correct_password":
+                st.session_state["logged_in"] = True
+                st.session_state["uname"] = results[1]
                 st.rerun()  # st.experimental_rerun()
     ###############################
-    # Display the whole list end
-    ###############################
-    ###############################
-    # Stored List logic end
+    # Register & Login logic end
     ###############################
 
 # Custom CSS to improve the look and feel of the app
@@ -150,14 +83,12 @@ def clean_html(html_string):
     soup = BeautifulSoup(html_string, 'html.parser')
     return soup.get_text(separator='\n')
 
-
 # Function to remove HTML tags from text
 def remove_html_tags(text):
     # Regular expression for finding HTML tags
     pattern = r'<[^>]+>'
     # Replace HTML tags with an empty string
     return re.sub(pattern, ' ', text)
-
 
 # Function to get recipe recommendations from the Spoonacular API
 def get_recipe_recommendations(api_key, ingredients):
@@ -191,26 +122,40 @@ def get_recipe_details(api_key, recipe_id):
     except requests.exceptions.RequestException as err:
         return f"Error: {err}"
 
-# Initialize session state for inventory and shopping list
-if 'inventory' not in st.session_state:
-    st.session_state['inventory'] = {}
-if 'shopping_list' not in st.session_state:
-    st.session_state['shopping_list'] = []
+def update_inventory_with_bought_item(item_name, user):
+    result = query_all_table(user)
+    inventory_items_y = []
+    for item in result[0]:
+        inventory_items_y.append(item[2])
+    if item_name not in inventory_items_y:
+        query_add(user, item_name)
 
-def update_inventory_with_bought_item(item_name):
-    if item_name not in st.session_state['inventory']:
-        st.session_state['inventory'][item_name] = item_name
 
-# Check if the user is logged in
-if st.session_state["logged_in"]:
+def show_main_app():
 
     # Streamlit app layout
     st.title('ReC🍳okify')
 
     # Sidebar navigation
-    page = st.sidebar.radio('Navigate to', ['Home', 'Inventory', 'Recipes', 'Shopping List'])
+    page = st.sidebar.radio('Navigate to', ['Home', 'Inventory', 'Recipes', 'Shopping List', 'Logout'])
 
     api_key = '5bb998eadc274a599d9732e71f03a378'
+
+    ###############################
+    # Logout logic start
+    ###############################
+    # If the logout button is pressed, the following code is executed
+    if page == 'Logout':
+        st.session_state['logged_in'] = False
+        st.session_state["uname"] = None
+        st.session_state['shopping_list'] = []
+        st.experimental_rerun()  # Use st.experimental_rerun() instead of st.rerun()
+    ###############################
+    # Logout logic end
+    ###############################
+
+    # Leverage the user variable from login
+    user = st.session_state["uname"]
 
     if page == 'Home':
         st.header('🏠 Welcome to our App!')
@@ -225,19 +170,63 @@ if st.session_state["logged_in"]:
 
         st.markdown('Whether you want to organize your kitchen, garage, or office supplies, our app has got you covered. Take control of your inventory like never before.')
 
+
+
     elif page == 'Inventory':
         st.header('🥦 Your Inventory')
-        item_name = st.text_input('Add an item to your inventory:')
-        if st.button('Add to Inventory') and item_name:
-            st.session_state['inventory'][item_name] = item_name
+
+        ###############################
+        # Add items start
+        ###############################
+        # Check if the 'add_button_clicked' key exists in the session_state, if not, initialize it
+        if "new_item" not in st.session_state:
+            st.session_state["new_item"] = ""
+        itemname = st.text_input('Add an item to your inventory:')
+        # Only set the flag when the button is clicked
+        if st.button('Add to Inventory', key=st.session_state["new_item"]) and itemname != "":
+            result = query_all_table(user)
+            inventory_items_x = []
+            for item in result[0]:
+                inventory_items_x.append(item[2])
+            # Add the selected item for the user
+            if itemname not in inventory_items_x:
+                query_add(user, itemname)
+                st.session_state["new_item"] = random.random()  # prevents a stupid streamlit bug (/feature)
+            st.rerun()  # st.experimental_rerun()
+        ###############################
+        # Add items end
+        ###############################
+
         st.subheader("Inventory Items")
-        st.write(', '.join(st.session_state['inventory'].keys()))
-
-
+        ###############################
+        # Display the whole list start
+        ###############################
+        # We query PSQL for all items stored for this user
+        result = query_all_table(user)
+        # We loop over all results and display them in a table
+        items = []
+        for item_index, item in enumerate(result[0]):
+            items.append([item[2], result[1][item_index + 1]])
+        # Create a table with buttons
+        for item, item_index in items:
+            col1, col2 = st.columns([3, 2])
+            with col1:
+                st.text(item)
+            with col2:
+                if st.button("Delete", key=item_index):
+                    # Delete the selected item from the user
+                    query_delete(item_index)
+                    st.rerun()  # st.experimental_rerun()
+        ###############################
+        # Display the whole list end
+        ###############################
 
     elif page == 'Recipes':
         st.header('🍲 Find Recipes')
-        inventory_items = list(st.session_state['inventory'].keys())
+        result = query_all_table(user)
+        inventory_items = []
+        for item in result[0]:
+            inventory_items.append(item[2])
         selected_items = st.multiselect('Select items from your inventory for recipes:', inventory_items)
 
         if st.button('Find Recipes with Selected Ingredients'):
@@ -263,17 +252,15 @@ if st.session_state["logged_in"]:
                             if 'readyInMinutes' in recipe_details:
                                 st.write(f"**Cooking Time**: {recipe_details['readyInMinutes']} minutes")
 
-                            missing_ingredients = [ingredient for ingredient in ingredients if ingredient not in st.session_state['inventory']]
+                            missing_ingredients = [ingredient for ingredient in ingredients if ingredient not in inventory_items]
                             st.session_state['shopping_list'].extend(missing_ingredients)
 
-
-
-
-
-
-
-
+    # The shopping list is not persistent, and thus does not need a delete button.
+    # Just select your recipe, buy the things and mark them as bought. If you
+    # log out in between you need to search for the recipe again and your
+    # shopping list is updated dynamically.
     elif page == 'Shopping List':
+        st.session_state['shopping_list'] = list(set(st.session_state['shopping_list']))
         st.header('🛒 Your Shopping List')
         # Use enumerate to get both the index and the item
         for index, item in enumerate(st.session_state['shopping_list']):
@@ -284,10 +271,26 @@ if st.session_state["logged_in"]:
                 # Unique key using both the item name and its index
                 if st.button(f"Mark as bought", key=f"bought_{item}_{index}"):
                     st.session_state['shopping_list'].remove(item)
-                    update_inventory_with_bought_item(item)
+                    update_inventory_with_bought_item(item, user)
+                    st.rerun()  # st.experimental_rerun()
+
+
+# First we need to initialize the session states for login, inventory and shopping list
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+    st.session_state["uname"] = None
+if 'shopping_list' not in st.session_state:
+    st.session_state['shopping_list'] = []
+
+# Check if the user is logged in
+if st.session_state["logged_in"]:
+    show_main_app()
 else:
     # If the user is not logged in, he sees the login page
     show_login_page()
+
+
+
 
 # Styling and other layout improvements
 st.markdown("""
