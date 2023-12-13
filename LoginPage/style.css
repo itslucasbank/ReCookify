@@ -1,0 +1,57 @@
+/* General body styling */
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+/* Styling for main headers */
+h1 {
+    color: #4a4e69;
+    font-size: 2.5em;
+    text-align: center;
+}
+
+h2 {
+    color: #22223b;
+    font-size: 2em;
+}
+
+/* Styling for Streamlit widgets */
+.stTextInput, .stSelectbox, .stButton, .stMultiSelect {
+    margin-bottom: 10px;
+}
+
+.stTextInput>div>div>input, .stSelectbox>div>div>select, .stMultiSelect>div>div>div>select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #c9ada7;
+}
+
+.stButton>button {
+    background-color: #9a8c98;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+.stButton>button:hover {
+    background-color: #4a4e69;
+}
+
+/* Sidebar styling */
+.stSidebar {
+    background-color: #f2e9e4;
+}
+
+/* Customizing the radio buttons in the sidebar */
+.stRadio>div {
+    display: flex;
+    justify-content: center;
+}
+
+/* Customize markdown text */
+.markdown-text-container {
+    color: #22223b;
+    font-size: 1.1em;
+}
